@@ -19,6 +19,36 @@ python manage.py runserver
 
 The API health check is available at `http://127.0.0.1:8000/api/health/`.
 
+## Patient records GUI
+
+Django Admin provides the first backend GUI for clinic staff. Create an administrator account once:
+
+```sh
+cd backend
+.venv/bin/python manage.py createsuperuser
+```
+
+After starting Django, open `http://127.0.0.1:8000/admin/` and sign in. The **Patients** section lets you add and edit records, search by patient number, name, phone, or email, and filter by sex, blood group, or registration date. Staff profiles are also visible under **Staff profiles**.
+
+Use a strong private password and do not expose the development admin to the public internet.
+
+## Default development staff
+
+Create or verify the three staff accounts with:
+
+```sh
+cd backend
+.venv/bin/python manage.py seed_staff
+```
+
+For local development, the default password is `ChangeMe123!`:
+
+- Doctor: `doctor`
+- Nurse: `nurse`
+- Front desk: `frontdesk`
+
+Set `STAFF_DEFAULT_PASSWORD` before running `seed_staff` to use a different password. Change these credentials before any shared or production deployment.
+
 ## Start the frontend
 
 In a second terminal:
@@ -48,7 +78,7 @@ The repository includes a project-local Node.js runtime in `.tools` because Node
 
 1. Add environment-based Django settings and a production secret key.
 2. Create health-centre models for services, staff, appointments, and patient enquiries.
-3. Add authentication and role-based access before storing patient data.
+3. Add role-based dashboards and password reset before storing patient data.
 4. Replace SQLite with PostgreSQL before deployment.
 5. Add privacy, consent, audit logging, backups, and HTTPS for patient information.
 # oniruphc
