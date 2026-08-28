@@ -19,6 +19,10 @@ python manage.py runserver
 
 The API health check is available at `http://127.0.0.1:8000/api/health/`.
 
+## Online appointments
+
+The homepage includes an online booking form. Requests are saved as **Appointments** in Django Admin, where staff can search bookings and change their status from pending to confirmed or cancelled. The homepage shows upcoming service, date, time, and status; patient names, phone numbers, email addresses, and notes remain private.
+
 ## Patient records GUI
 
 Django Admin provides the first backend GUI for clinic staff. Create an administrator account once:
