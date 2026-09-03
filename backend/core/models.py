@@ -31,7 +31,7 @@ class Patient(models.Model):
 	nationality = models.CharField(max_length=100, default='Nigerian')
 	date_of_birth = models.DateField(blank=True, null=True)
 	sex = models.CharField(max_length=20, choices=Sex.choices, blank=True)
-	phone = models.CharField(max_length=30)
+	phone = models.CharField(max_length=30, blank=True)
 	email = models.EmailField(blank=True)
 	address = models.TextField(blank=True)
 	emergency_contact_name = models.CharField(max_length=200, blank=True)
@@ -92,3 +92,35 @@ class Appointment(models.Model):
 
 	def __str__(self):
 		return f'{self.full_name} - {self.appointment_date} at {self.appointment_time}'
+
+
+class NurseVitals(models.Model):
+	patient = models.OneToOneField(Patient, on_delete=models.CASCADE, related_name='vitals')
+	temperature = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+	pulse_rate = models.PositiveIntegerField(blank=True, null=True)
+	blood_pressure = models.CharField(max_length=20, blank=True)
+	weight = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+	height = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+	recent_test_result = models.TextField(blank=True)
+	diagnosis = models.TextField(blank=True)
+	recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='recorded_vitals')
+	updated_at = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return f'Vitals for {self.patient.full_name}'
+
+
+class DoctorConsultation(models.Model):
+	patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='doctor_consultations')
+	diagnosis = models.TextField(blank=True)
+	medical_notes = models.TextField(blank=True)
+	drugs = models.TextField(blank=True)
+	recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='recorded_consultations')
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		ordering = ['-created_at']
+
+	def __str__(self):
+		return f'Consultation for {self.patient.full_name} on {self.created_at.date()}'

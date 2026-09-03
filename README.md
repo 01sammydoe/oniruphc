@@ -85,4 +85,18 @@ The repository includes a project-local Node.js runtime in `.tools` because Node
 3. Add role-based dashboards and password reset before storing patient data.
 4. Replace SQLite with PostgreSQL before deployment.
 5. Add privacy, consent, audit logging, backups, and HTTPS for patient information.
+
+## Deploy on Render
+
+The repository includes `render.yaml` for the Django API, Vite frontend, and PostgreSQL database.
+
+1. Push the repository to GitHub.
+2. In Render, choose **New > Blueprint**, connect the GitHub repository, and apply `render.yaml`.
+3. After the API service is created, copy its public URL, for example `https://oniru-phc-api.onrender.com`.
+4. In the frontend service environment, set `VITE_API_URL` to that URL followed by `/api`.
+5. In the API service environment, set `CORS_ALLOWED_ORIGINS` and `CSRF_TRUSTED_ORIGINS` to the frontend URL, for example `https://oniru-phc-frontend.onrender.com`.
+6. Redeploy the frontend after saving its environment variable.
+7. Open the API service Shell and run `python manage.py createsuperuser`, then use `/admin/` to manage staff and patient records.
+
+Do not use the development staff password in production. Set `STAFF_DEFAULT_PASSWORD` before running `python manage.py seed_staff`, or create staff accounts through Django Admin.
 # oniruphc

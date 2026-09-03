@@ -77,3 +77,33 @@ export function recordFrontDeskPayment(appointmentId) {
 export function getFrontDeskRevenue(date) {
   return apiRequest(`/frontdesk/revenue/?date=${encodeURIComponent(date)}`)
 }
+
+export function getPatientProfile() {
+  return apiRequest('/profile/')
+}
+
+export function lookupNurseVitals(patientNumber) {
+  return apiRequest(`/nurse/patient-vitals/?patient_number=${encodeURIComponent(patientNumber)}`)
+}
+
+export function saveNurseVitals(details) {
+  return apiRequest('/nurse/patient-vitals/', {
+    method: 'POST',
+    body: JSON.stringify(details),
+  })
+}
+
+export function lookupDoctorPatient(patientNumber) {
+  return apiRequest(`/doctor/patient-record/?patient_number=${encodeURIComponent(patientNumber)}`)
+}
+
+export function saveDoctorConsultation(details) {
+  return apiRequest('/doctor/patient-record/', {
+    method: 'POST',
+    body: JSON.stringify(details),
+  })
+}
+
+export function getDoctorSummary(date) {
+  return apiRequest(`/doctor/summary/?date=${encodeURIComponent(date)}`)
+}

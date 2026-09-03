@@ -4,7 +4,7 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 
-from .models import Appointment, Patient, StaffProfile
+from .models import Appointment, DoctorConsultation, NurseVitals, Patient, StaffProfile
 
 
 class HealthCheckTests(TestCase):
@@ -163,3 +163,84 @@ class FrontDeskApiTests(TestCase):
 		patient_client.credentials(HTTP_AUTHORIZATION=f'Token {Token.objects.create(user=patient_user).key}')
 
 		self.assertEqual(patient_client.get('/api/frontdesk/revenue/').status_code, 403)
+
+
+class NurseVitalsApiTests(TestCase):
+	def setUp(self):
+		self.nurse = User.objects.create_user(username='nurse', password='Password123!', first_name='Nurse', last_name='Care')
+		StaffProfile.objects.create(user=self.nurse, role=StaffProfile.Role.NURSE)
+		self.patient = Patient.objects.create(patient_number='PHC-0200', first_name='Ayo', last_name='Bello', phone='08000000000', email='ayo@example.com')
+		self.client = APIClient()
+		self.client.credentials(HTTP_AUTHORIZATION=f'Token {Token.objects.create(user=self.nurse).key}')
+
+	def test_nurse_can_save_vitals(self):
+		response = self.client.post('/api/nurse/patient-vitals/', {
+			'patient_number': 'PHC-0200', 'temperature': '36.8', 'pulse_rate': '72',
+			'blood_pressure': '120/80', 'weight': '68.5', 'height': '172',
+			'recent_test_result': 'Normal', 'diagnosis': 'Routine review',
+		}, format='json')
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(NurseVitals.objects.get(patient=self.patient).diagnosis, 'Routine review')
+
+	def test_patient_profile_includes_nurse_vitals(self):
+		NurseVitals.objects.create(patient=self.patient, temperature='37.0', recorded_by=self.nurse)
+		patient_user = User.objects.create_user(username='patient-vitals', password='Password123!')
+		self.patient.user = patient_user
+		self.patient.save(update_fields=['user'])
+		client = APIClient()
+		client.credentials(HTTP_AUTHORIZATION=f'Token {Token.objects.create(user=patient_user).key}')
+
+		response = client.get('/api/profile/')
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.json()['vitals']['temperature'], '37.0')
+
+
+class DoctorConsultationApiTests(TestCase):
+	def setUp(self):
+		self.doctor = User.objects.create_user(username='doctor', password='Password123!', first_name='Dr.', last_name='Care')
+		StaffProfile.objects.create(user=self.doctor, role=StaffProfile.Role.DOCTOR)
+		self.patient = Patient.objects.create(patient_number='PHC-0300', first_name='Grace', last_name='Adebayo', phone='08000000000', email='grace@example.com')
+		self.client = APIClient()
+		self.client.credentials(HTTP_AUTHORIZATION=f'Token {Token.objects.create(user=self.doctor).key}')
+
+	def test_doctor_can_load_patient_profile_and_record_diagnosis_and_drugs(self):
+		response = self.client.post('/api/doctor/patient-record/', {
+			'patient_number': 'PHC-0300',
+			'diagnosis': 'Upper respiratory infection',
+			'medical_notes': 'Patient reports cough and fever for two days.',
+			'drugs': 'Amoxicillin 500mg, Paracetamol 500mg',
+		}, format='json')
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.json()['patient']['name'], 'Grace Adebayo')
+		self.assertEqual(response.json()['consultation']['diagnosis'], 'Upper respiratory infection')
+		self.assertEqual(DoctorConsultation.objects.get(patient=self.patient).drugs, 'Amoxicillin 500mg, Paracetamol 500mg')
+
+	def test_doctor_daily_summary_counts_patients_attended(self):
+		DoctorConsultation.objects.create(
+			patient=self.patient,
+			diagnosis='Malaria',
+			drugs='Artesunate',
+			recorded_by=self.doctor,
+		)
+
+		response = self.client.get(f"/api/doctor/summary/?date={timezone.localdate().isoformat()}")
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.json()['count'], 1)
+		self.assertEqual(response.json()['patients'][0]['name'], 'Grace Adebayo')
+
+
+class AdminCreatedPatientLoginTests(TestCase):
+	def test_admin_created_user_gets_patient_profile_on_login(self):
+		user = User.objects.create_user(username='admin-created', password='Password123!', email='admin@example.com')
+
+		response = APIClient().post('/api/auth/patient-login/', {
+			'username': user.username, 'password': 'Password123!',
+		}, format='json')
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.json()['profile']['patient_number'], f'PHC-{user.pk:04d}')
+		self.assertTrue(Patient.objects.filter(user=user).exists())
