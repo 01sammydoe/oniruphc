@@ -11,8 +11,8 @@ class HealthCheckTests(TestCase):
 	def test_api_root(self):
 		response = APIClient().get('/')
 
-		self.assertEqual(response.status_code, 200)
-		self.assertEqual(response.json()['health'], '/api/health/')
+		self.assertEqual(response.status_code, 302)
+		self.assertEqual(response['Location'], '/admin/')
 
 	def test_health_check(self):
 		response = APIClient().get('/api/health/')
