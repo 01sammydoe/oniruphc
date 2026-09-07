@@ -11,8 +11,8 @@ class NurseVitalsAdmin(admin.ModelAdmin):
 
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
-	list_display = ('appointment_date', 'appointment_time', 'full_name', 'service', 'price', 'payment_status', 'paid_at', 'status', 'phone')
-	list_filter = ('status', 'payment_status', 'service', 'appointment_date')
+	list_display = ('appointment_date', 'appointment_time', 'full_name', 'service', 'status', 'phone')
+	list_filter = ('status', 'service', 'appointment_date')
 	search_fields = ('full_name', 'email', 'phone', 'patient__patient_number')
 	date_hierarchy = 'appointment_date'
 	list_editable = ('status',)
