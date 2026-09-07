@@ -130,12 +130,15 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-CORS_ALLOWED_ORIGINS = [origin.strip().rstrip('/') for origin in os.environ.get(
-    'CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173'
-).split(',') if origin.strip()]
-CSRF_TRUSTED_ORIGINS = [origin.strip().rstrip('/') for origin in os.environ.get(
-    'CSRF_TRUSTED_ORIGINS', ''
-).split(',') if origin.strip()]
+def configured_origins(value):
+	return [origin.strip().rstrip('/') for origin in value.split(',') if origin.strip()]
+
+
+CORS_ALLOWED_ORIGINS = configured_origins(os.environ.get(
+    'CORS_ALLOWED_ORIGINS',
+    'http://localhost:5173,http://127.0.0.1:5173,https://oniruphc-1.onrender.com',
+))
+CSRF_TRUSTED_ORIGINS = configured_origins(os.environ.get('CSRF_TRUSTED_ORIGINS', ''))
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
