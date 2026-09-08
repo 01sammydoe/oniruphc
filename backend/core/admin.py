@@ -20,23 +20,10 @@ class AppointmentAdmin(admin.ModelAdmin):
 
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):
-	list_display = ('patient_number', 'full_name_display', 'phone', 'sex', 'date_of_birth', 'updated_at')
-	list_display_links = ('patient_number', 'full_name_display')
+	list_display = ('patient_number', 'phone', 'sex', 'date_of_birth')
+	list_display_links = ('patient_number',)
 	search_fields = ('patient_number', 'first_name', 'last_name', 'phone', 'email')
-	list_filter = ('sex', 'blood_group', 'created_at')
-	date_hierarchy = 'created_at'
-	readonly_fields = ('created_at', 'updated_at')
-	fieldsets = (
-		('Identity', {'fields': ('patient_number', 'user', 'first_name', 'middle_name', 'last_name', 'state_of_origin', 'nationality', 'date_of_birth', 'sex')}),
-		('Contact', {'fields': ('phone', 'email', 'address')}),
-		('Emergency contact', {'fields': ('next_of_kin', 'emergency_contact_name', 'emergency_contact_phone')}),
-		('Clinical notes', {'fields': ('blood_group', 'allergies', 'medical_notes')}),
-		('Record history', {'fields': ('created_at', 'updated_at')}),
-	)
-
-	@admin.display(description='Patient', ordering='last_name')
-	def full_name_display(self, obj):
-		return obj.full_name
+	list_filter = ('sex',)
 
 
 @admin.register(StaffProfile)
