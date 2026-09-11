@@ -4,9 +4,8 @@ from .models import Appointment, NurseVitals, Patient, StaffProfile
 
 @admin.register(NurseVitals)
 class NurseVitalsAdmin(admin.ModelAdmin):
-	list_display = ('patient', 'temperature', 'pulse_rate', 'blood_pressure', 'weight', 'height', 'updated_at')
-	search_fields = ('patient__patient_number', 'patient__first_name', 'patient__last_name', 'diagnosis')
-	readonly_fields = ('updated_at',)
+	list_display = ('patient', 'updated_at')
+	search_fields = ('patient__patient_number', 'patient__first_name', 'patient__last_name')
 
 
 @admin.register(Appointment)
